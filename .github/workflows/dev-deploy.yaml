@@ -3,7 +3,7 @@ name: Deploy SAM App
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   MYSQL_HOST: "database-1.cb0k5xaybtp3.us-east-1.rds.amazonaws.com"
@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Change into commerce/app directory
-        run: cd commerce/app
+      # - name: Change into commerce/app directory
+      #   run: cd commerce/app
       - uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
