@@ -1,0 +1,6 @@
+pdfplumber
+boto3
+PyMuPDF
+usaddress
+mysql.connector
+pytz

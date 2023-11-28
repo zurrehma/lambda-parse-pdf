@@ -1,0 +1,42 @@
+name: Deploy SAM App
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  MYSQL_HOST: "database-1.cb0k5xaybtp3.us-east-1.rds.amazonaws.com"
+  MYSQL_USER: "admin"
+  MYSQL_DATABASE: "pdfreader"
+  DYNAMO_TABLE_NAME: "commerce_hub_packing_slips"
+  S3_BUCKET_NAME: "commerece-hub-v1"
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Change into commerce/app directory
+        run: cd commerce/app
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-duration-seconds: 1800
+          role-skip-session-tagging: true
+          role-to-assume: arn:aws:iam::396932459347:role/github-role
+      - run: sam build
+      # Prevent prompts and failure when the stack is unchanged
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
+           --role-arn arn:aws:iam::269174633178:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionR-830GQUQ9J19P \
+           --stack-name sam-lambdas \
+           --resolve-s3 \
+           --s3-prefix "sam-lambdas" \
+           --region us-east-1 \
+           --capabilities CAPABILITY_IAM \
+           --parameter-overrides "MySQLHost=$MYSQL_HOST MySQLUser=$MYSQL_USER MySQLPassword=$MYSQL_PASSWORD MySQLDatabase=$MYSQL_DATABASE DynamoDBTableName=$DYNAMO_TABLE_NAME S3BucketName=$S3_BUCKET_NAME"
+        env:
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
