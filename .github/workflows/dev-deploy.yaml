@@ -9,7 +9,7 @@ on:
       - master
 
 env:
-  MYSQL_HOST: "database-1.cb0k5xaybtp3.us-east-1.rds.amazonaws.com"
+  MYSQL_HOST: "database-1.csfzbg3zjvw9.us-east-1.rds.amazonaws.com"
   MYSQL_USER: "admin"
   MYSQL_DATABASE: "pdfreader"
   DYNAMO_TABLE_NAME: "commerce_hub_packing_slips"
