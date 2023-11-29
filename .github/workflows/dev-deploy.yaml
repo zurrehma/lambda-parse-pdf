@@ -14,6 +14,7 @@ env:
   MYSQL_DATABASE: "pdfreader"
   DYNAMO_TABLE_NAME: "commerce_hub_packing_slips"
   S3_BUCKET_NAME: "commerece-hub-v1"
+  AWS_REGION: "us-east-1"
 
 jobs:
   deploy-dev:
@@ -25,20 +26,26 @@ jobs:
       - uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
-      - uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: us-east-1
-          role-duration-seconds: 1800
-          role-skip-session-tagging: true
-          role-to-assume: arn:aws:iam::396932459347:role/github-role
-      - run: sam build
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ AWS_REGION }}
+      # - uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-region: us-east-1
+      #     role-duration-seconds: 1800
+      #     role-skip-session-tagging: true
+      #     role-to-assume: arn:aws:iam::396932459347:role/github-role
+      - run: sam build --use-container --container-env-var MYSQL_HOST=$MYSQL_HOST --container-env-var MYSQL_USER=$MYSQL_USER --container-env-var MYSQL_PASSWORD=$MYSQL_PASSWORD --container-env-var MYSQL_DATABASE=$MYSQL_DATABASE --container-env-var DYNAMO_TABLE_NAME=$DYNAMO_TABLE_NAME
+        env:
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       # Prevent prompts and failure when the stack is unchanged
       - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
-           --role-arn arn:aws:iam::269174633178:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionR-830GQUQ9J19P \
-           --stack-name sam-lambdas \
            --resolve-s3 \
            --s3-prefix "sam-lambdas" \
-           --region us-east-1 \
+           --region $AWS_REGION \
            --capabilities CAPABILITY_IAM \
            --parameter-overrides "MySQLHost=$MYSQL_HOST MySQLUser=$MYSQL_USER MySQLPassword=$MYSQL_PASSWORD MySQLDatabase=$MYSQL_DATABASE DynamoDBTableName=$DYNAMO_TABLE_NAME S3BucketName=$S3_BUCKET_NAME"
         env:
